@@ -13,6 +13,18 @@ const contractAddress = "your-contract-address-here";
 const contractName = "your-contract-name-here";
 const sbtcTokenAddress = "your-sbtc-token-contract-address-here";
 
+/**
+ * Creates an HTLC contract call.
+ *
+ * @param {number} id - The HTLC ID.
+ * @param {string} recipient - The recipient of the HTLC.
+ * @param {string} hash - The hash of the HTLC.
+ * @param {number} amount - The amount of tokens locked in the HTLC.
+ * @param {number} timeout - The timeout in blocks.
+ * @param {string|null} [tokenContractAddress=null] - The contract address of the token, if any.
+ *
+ * @returns {Promise<string>} - A Promise that resolves to the transaction ID of the contract call.
+ */
 async function createHTLC(id, recipient, hash, amount, timeout, tokenContractAddress) {
   const txOptions = {
     contractAddress: contractAddress,
@@ -37,6 +49,13 @@ async function createHTLC(id, recipient, hash, amount, timeout, tokenContractAdd
   return result;
 }
 
+/**
+ * Funds the HTLC channel with STX.
+ *
+ * @param {number} amount - The amount of STX to fund the channel with.
+ *
+ * @returns {Promise<string>} - A Promise that resolves to the transaction ID of the STX transfer.
+ */
 async function fundChannel(amount) {
   const txOptions = makeSTXTokenTransfer({
     recipient: contractAddress,
@@ -51,6 +70,14 @@ async function fundChannel(amount) {
   return result;
 }
 
+/**
+ * Redeems an HTLC.
+ *
+ * @param {number} id - The HTLC ID.
+ * @param {string} preimage - The preimage to use for redemption.
+ *
+ * @returns {Promise<string>} - A Promise that resolves to the transaction ID of the contract call.
+ */
 async function redeemHTLC(id, preimage) {
   const txOptions = {
     contractAddress: contractAddress,
@@ -66,6 +93,13 @@ async function redeemHTLC(id, preimage) {
   return result;
 }
 
+/**
+ * Refunds an expired HTLC.
+ *
+ * @param {number} id - The HTLC ID.
+ *
+ * @returns {Promise<string>} - A Promise that resolves to the transaction ID of the contract call.
+ */
 async function refundHTLC(id) {
   const txOptions = {
     contractAddress: contractAddress,
@@ -80,31 +114,3 @@ async function refundHTLC(id) {
   const result = await broadcastTransaction(transaction, network);
   return result;
 }
-
-// The example code below demonstrates how to interact with the updated HTLC Clarity contract using `@stacks/transactions`.
-// You can use these helper functions in conjunction with a Lightning Network implementation to create, redeem, and refund HTLCs, as well as fund the channel.
-
-// Fund the channel with 1000 STX
-fundChannel(1000)
-  .then((result) => console.log("Fund Channel Result:", result))
-  .catch((error) => console.error("Fund Channel Error:", error));
-
-// Create an HTLC with STX
-createHTLC(1, "recipient-address", "hash", 100, 100, null)
-  .then((result) => console.log("Create STX HTLC Result:", result))
-  .catch((error) => console.error("Create STX HTLC Error:", error));
-
-// Create an HTLC with sBTC
-createHTLC(2, "recipient-address", "hash", 50, 100, sbtcTokenAddress)
-  .then((result) => console.log("Create sBTC HTLC Result:", result))
-  .catch((error) => console.error("Create sBTC HTLC Error:", error));
-
-// Redeem an HTLC
-redeemHTLC(1, "preimage")
-  .then((result) => console.log("Redeem HTLC Result:", result))
-  .catch((error) => console.error("Redeem HTLC Error:", error));
-
-// Refund an HTLC
-refundHTLC(1)
-  .then((result) => console.log("Refund HTLC Result:", result))
-  .catch((error) => console.error("Refund HTLC Error:", error));
